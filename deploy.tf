@@ -26,6 +26,12 @@ variable "CLOUDFLARE_EMAIL_ADDRESS" {
   type = string
 }
 
+variable "prefix" {
+  type        = string
+  description = "前缀"
+  default     = "yourselfmail"
+}
+
 data "cloudflare_zone" "main" {
   #  account_id = var.CLOUDFLARE_ACCOUNT_ID
   name = var.CLOUDFLARE_ZONE_NAME
@@ -148,8 +154,8 @@ resource "cloudflare_record" "txt" {
 
 resource "cloudflare_record" "record" {
   zone_id = trimspace(data.cloudflare_zone.main.id)
-  name    = trimspace(data.cloudflare_zone.main.name)
-  value   = cloudflare_pages_project.yourselfemail.subdomain
+  name    = "mail"
+  value   = cloudflare_pages_project.page.subdomain
   type    = "CNAME"
   ttl     = 1
   proxied = true
@@ -157,11 +163,11 @@ resource "cloudflare_record" "record" {
 
 resource "cloudflare_pages_domain" "domain" {
   account_id   = var.CLOUDFLARE_ACCOUNT_ID
-  project_name = "yourselfemail-domain"
+  project_name = "${var.prefix}-domain"
   domain       = trimspace(data.cloudflare_zone.main.name)
 
   depends_on = [
-    cloudflare_pages_project.yourselfemail,
+    cloudflare_pages_project.page,
     cloudflare_record.record,
   ]
 }
@@ -176,9 +182,9 @@ resource "cloudflare_worker_cron_trigger" "cronjob" {
   ]
 }
 
-resource "cloudflare_pages_project" "yourselfemail" {
+resource "cloudflare_pages_project" "page" {
   account_id        = var.CLOUDFLARE_ACCOUNT_ID
-  name              = "yourselfemail"
+  name              = "${var.prefix}-page"
   production_branch = "main"
 
   deployment_configs {
