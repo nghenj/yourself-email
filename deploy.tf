@@ -126,6 +126,8 @@ resource "cloudflare_record" "mx_1" {
   type     = "MX"
   value    = "route1.mx.cloudflare.net"
   priority = 3
+
+  allow_overwrite = true
 }
 
 resource "cloudflare_record" "mx_2" {
@@ -134,6 +136,8 @@ resource "cloudflare_record" "mx_2" {
   type     = "MX"
   value    = "route2.mx.cloudflare.net"
   priority = 58
+
+  allow_overwrite = true
 }
 
 resource "cloudflare_record" "mx_3" {
@@ -142,6 +146,8 @@ resource "cloudflare_record" "mx_3" {
   type     = "MX"
   value    = "route3.mx.cloudflare.net"
   priority = 95
+
+  allow_overwrite = true
 }
 
 resource "cloudflare_record" "txt" {
@@ -149,27 +155,39 @@ resource "cloudflare_record" "txt" {
   name    = data.cloudflare_zone.main.name
   type    = "TXT"
   value   = "v=spf1 include:_spf.mx.cloudflare.net ~all"
+
+  allow_overwrite = true
+}
+
+resource "cloudflare_record" "mailchannels" {
+  zone_id = data.cloudflare_zone.main.id
+  name    = "_mailchannels"
+  type    = "TXT"
+  value   = "v=mc1 cfid=${cloudflare_pages_project.page.subdomain} cfid=mail.${data.cloudflare_zone.main.name}"
+
+  allow_overwrite = true
+
+  depends_on = [
+    cloudflare_pages_project.page,
+  ]
 }
 
 
-resource "cloudflare_record" "record" {
+resource "cloudflare_record" "page" {
   zone_id = trimspace(data.cloudflare_zone.main.id)
   name    = "mail"
-  value   = cloudflare_pages_project.page.subdomain
+  value   = data.cloudflare_zone.main.name
   type    = "CNAME"
   ttl     = 1
   proxied = true
+
+  allow_overwrite = true
 }
 
 resource "cloudflare_pages_domain" "domain" {
   account_id   = var.CLOUDFLARE_ACCOUNT_ID
   project_name = "${var.prefix}-domain"
   domain       = trimspace(data.cloudflare_zone.main.name)
-
-  depends_on = [
-    cloudflare_pages_project.page,
-    cloudflare_record.record,
-  ]
 }
 
 
@@ -187,7 +205,9 @@ resource "cloudflare_pages_project" "page" {
   name              = "yourselfemail"
   production_branch = "main"
 
+
   deployment_configs {
+    preview {}
     production {
       environment_variables = {
 
@@ -198,7 +218,8 @@ resource "cloudflare_pages_project" "page" {
       d1_databases = {
         DB = sensitive(cloudflare_d1_database.database.id)
       }
-      compatibility_date = "2024-04-05"
+      compatibility_date  = "2024-04-05"
+      compatibility_flags = ["nodejs_compat"]
     }
   }
 }
