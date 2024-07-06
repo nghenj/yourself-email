@@ -10,7 +10,6 @@
 
 ### Show Demo
 
-
 > Demo address: http://mail.hocg.in, Log in using any of your email addresses.
 >
 > Default permissions have been configured. After logging in, you can read/send emails: test@hocg.in 和 test2@hocg.in
