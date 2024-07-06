@@ -82,6 +82,8 @@ resource "cloudflare_worker_script" "worker" {
 resource "cloudflare_email_routing_settings" "email_routing_settings" {
   zone_id = data.cloudflare_zone.main.id
   enabled = true
+
+  skip_wizard = true
 }
 
 #resource "cloudflare_email_routing_rule" "email_routing_rule" {
@@ -186,8 +188,12 @@ resource "cloudflare_record" "page" {
 
 resource "cloudflare_pages_domain" "domain" {
   account_id   = var.CLOUDFLARE_ACCOUNT_ID
-  project_name = "${var.prefix}-domain"
+  project_name = "yourselfemail"
   domain       = trimspace(data.cloudflare_zone.main.name)
+
+  depends_on = [
+    cloudflare_pages_project.page
+  ]
 }
 
 
