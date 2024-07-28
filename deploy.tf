@@ -175,17 +175,6 @@ resource "cloudflare_record" "mailchannels" {
 }
 
 
-resource "cloudflare_record" "page" {
-  zone_id = trimspace(data.cloudflare_zone.main.id)
-  name    = "mail"
-  value   = data.cloudflare_zone.main.name
-  type    = "CNAME"
-  ttl     = 1
-  proxied = true
-
-  allow_overwrite = true
-}
-
 resource "cloudflare_pages_domain" "domain" {
   account_id   = var.CLOUDFLARE_ACCOUNT_ID
   project_name = "yourselfemail"
@@ -198,13 +187,13 @@ resource "cloudflare_pages_domain" "domain" {
 
 
 # 定时发送
-resource "cloudflare_worker_cron_trigger" "cronjob" {
-  account_id  = var.CLOUDFLARE_ACCOUNT_ID
-  script_name = cloudflare_worker_script.worker.name
-  schedules   = [
-    "* * * * *",
-  ]
-}
+#resource "cloudflare_worker_cron_trigger" "cronjob" {
+#  account_id  = var.CLOUDFLARE_ACCOUNT_ID
+#  script_name = cloudflare_worker_script.worker.name
+#  schedules   = [
+#    "* * * * *",
+#  ]
+#}
 
 resource "cloudflare_pages_project" "page" {
   account_id        = var.CLOUDFLARE_ACCOUNT_ID
